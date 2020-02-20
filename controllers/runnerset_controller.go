@@ -81,7 +81,13 @@ func (r *RunnerSetReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		}
 	}
 
-	desired := rs.Spec.Replicas
+	var desired int
+
+	if rs.Spec.Replicas != nil {
+		desired = *rs.Spec.Replicas
+	} else {
+		desired = 1
+	}
 
 	if available > desired {
 		n := available - desired

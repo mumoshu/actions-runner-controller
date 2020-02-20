@@ -105,7 +105,7 @@ type RunnerSet struct {
 
 // RunnerSetSpec defines the desired state of RunnerSet
 type RunnerSetSpec struct {
-	Replicas int `json:"replicas"`
+	Replicas *int `json:"replicas"`
 
 	Template RunnerSpec `json:"template"`
 }
