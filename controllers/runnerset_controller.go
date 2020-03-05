@@ -153,6 +153,8 @@ func (r *RunnerSetReconciler) newRunner(rs v1alpha1.RunnerSet) (v1alpha1.Runner,
 		return runner, err
 	}
 
+	workAroundRunnerSpecValidationBug(&runner.Spec)
+
 	return runner, nil
 }
 
@@ -163,4 +165,14 @@ func (r *RunnerSetReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&v1alpha1.RunnerSet{}).
 		Owns(&v1alpha1.Runner{}).
 		Complete(r)
+}
+
+// workAroundRunnerSpecValidationBug "fixes" the runner spec by setting an empty "env" list to avoid
+// non-sense validation errors due to (I believe) a bug in controller-runtime CLient
+//
+// > validation failure list:\nspec.template.spec.env in body must be of type array: \"null\""
+func workAroundRunnerSpecValidationBug(spec *v1alpha1.RunnerSpec) {
+	if spec.Env == nil {
+		spec.Env = []corev1.EnvVar{}
+	}
 }

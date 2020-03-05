@@ -227,6 +227,8 @@ func (r *RunnerDeploymentReconciler) newRunnerSet(rd v1alpha1.RunnerDeployment) 
 		},
 	}
 
+	workAroundRunnerSpecValidationBug(&rs.Spec.Template.Spec)
+
 	if err := ctrl.SetControllerReference(&rd, &rs, r.Scheme); err != nil {
 		return rs, err
 	}

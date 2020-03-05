@@ -84,6 +84,8 @@ func (r *RunnerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 			newRunner := runner.DeepCopy()
 			newRunner.ObjectMeta.Finalizers = finalizers
 
+			workAroundRunnerSpecValidationBug(&newRunner.Spec)
+
 			if err := r.Update(ctx, newRunner); err != nil {
 				log.Error(err, "Failed to update runner")
 				return ctrl.Result{}, err
