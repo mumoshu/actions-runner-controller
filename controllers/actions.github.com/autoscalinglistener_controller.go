@@ -75,6 +75,9 @@ func (r *AutoscalingListenerReconciler) Reconcile(ctx context.Context, req ctrl.
 	ctx, span := otel.Tracer("arc").Start(ctx, "AutoscalingListenerReconciler.Reconcile")
 	defer span.End()
 
+	ctx, span := otel.Tracer("arc").Start(ctx, "AutoscalingListenerReconciler.Reconcile")
+	defer span.End()
+
 	log := r.Log.WithValues("autoscalinglistener", req.NamespacedName)
 
 	autoscalingListener := new(v1alpha1.AutoscalingListener)
@@ -280,6 +283,15 @@ func (r *AutoscalingListenerReconciler) cleanupResources(ctx context.Context, au
 		}
 	}()
 
+	ctx, span := otel.Tracer("arc").Start(ctx, "AutoscalingListenerReconciler.cleanupResources")
+	defer span.End()
+	defer func() {
+		if err != nil {
+			span.SetStatus(otelCodes.Error, "error")
+			span.RecordError(err)
+		}
+	}()
+
 	logger.Info("Cleaning up the listener pod")
 	listenerPod := new(corev1.Pod)
 	err = r.Get(ctx, types.NamespacedName{Name: autoscalingListener.Name, Namespace: autoscalingListener.Namespace}, listenerPod)
@@ -390,6 +402,9 @@ func (r *AutoscalingListenerReconciler) createServiceAccountForListener(ctx cont
 	ctx, span := otel.Tracer("arc").Start(ctx, "AutoscalingListenerReconciler.createServiceAccountForListener")
 	defer span.End()
 
+	ctx, span := otel.Tracer("arc").Start(ctx, "AutoscalingListenerReconciler.createServiceAccountForListener")
+	defer span.End()
+
 	newServiceAccount := r.resourceBuilder.newScaleSetListenerServiceAccount(autoscalingListener)
 
 	if err := ctrl.SetControllerReference(autoscalingListener, newServiceAccount, r.Scheme); err != nil {
@@ -407,6 +422,9 @@ func (r *AutoscalingListenerReconciler) createServiceAccountForListener(ctx cont
 }
 
 func (r *AutoscalingListenerReconciler) createListenerPod(ctx context.Context, autoscalingRunnerSet *v1alpha1.AutoscalingRunnerSet, autoscalingListener *v1alpha1.AutoscalingListener, serviceAccount *corev1.ServiceAccount, secret *corev1.Secret, logger logr.Logger) (ctrl.Result, error) {
+	ctx, span := otel.Tracer("arc").Start(ctx, "AutoscalingListenerReconciler.createListenerPod")
+	defer span.End()
+
 	ctx, span := otel.Tracer("arc").Start(ctx, "AutoscalingListenerReconciler.createListenerPod")
 	defer span.End()
 
@@ -522,6 +540,9 @@ func (r *AutoscalingListenerReconciler) certificate(ctx context.Context, autosca
 	ctx, span := otel.Tracer("arc").Start(ctx, "AutoscalingListenerReconciler.certificate")
 	defer span.End()
 
+	ctx, span := otel.Tracer("arc").Start(ctx, "AutoscalingListenerReconciler.certificate")
+	defer span.End()
+
 	if autoscalingListener.Spec.GitHubServerTLS.CertificateFrom == nil {
 		return "", fmt.Errorf("githubServerTLS.certificateFrom is not specified")
 	}
@@ -563,6 +584,9 @@ func (r *AutoscalingListenerReconciler) createSecretsForListener(ctx context.Con
 	ctx, span := otel.Tracer("arc").Start(ctx, "AutoscalingListenerReconciler.createSecretsForListener")
 	defer span.End()
 
+	ctx, span := otel.Tracer("arc").Start(ctx, "AutoscalingListenerReconciler.createSecretsForListener")
+	defer span.End()
+
 	newListenerSecret := r.resourceBuilder.newScaleSetListenerSecretMirror(autoscalingListener, secret)
 
 	if err := ctrl.SetControllerReference(autoscalingListener, newListenerSecret, r.Scheme); err != nil {
@@ -580,6 +604,9 @@ func (r *AutoscalingListenerReconciler) createSecretsForListener(ctx context.Con
 }
 
 func (r *AutoscalingListenerReconciler) createProxySecret(ctx context.Context, autoscalingListener *v1alpha1.AutoscalingListener, logger logr.Logger) (ctrl.Result, error) {
+	ctx, span := otel.Tracer("arc").Start(ctx, "AutoscalingListenerReconciler.createProxySecret")
+	defer span.End()
+
 	ctx, span := otel.Tracer("arc").Start(ctx, "AutoscalingListenerReconciler.createProxySecret")
 	defer span.End()
 
@@ -625,6 +652,9 @@ func (r *AutoscalingListenerReconciler) updateSecretsForListener(ctx context.Con
 	ctx, span := otel.Tracer("arc").Start(ctx, "AutoscalingListenerReconciler.updateSecretsForListener")
 	defer span.End()
 
+	ctx, span := otel.Tracer("arc").Start(ctx, "AutoscalingListenerReconciler.updateSecretsForListener")
+	defer span.End()
+
 	dataHash := hash.ComputeTemplateHash(secret.Data)
 	updatedMirrorSecret := mirrorSecret.DeepCopy()
 	updatedMirrorSecret.Labels["secret-data-hash"] = dataHash
@@ -644,6 +674,9 @@ func (r *AutoscalingListenerReconciler) createRoleForListener(ctx context.Contex
 	ctx, span := otel.Tracer("arc").Start(ctx, "AutoscalingListenerReconciler.createRoleForListener")
 	defer span.End()
 
+	ctx, span := otel.Tracer("arc").Start(ctx, "AutoscalingListenerReconciler.createRoleForListener")
+	defer span.End()
+
 	newRole := r.resourceBuilder.newScaleSetListenerRole(autoscalingListener)
 
 	logger.Info("Creating listener role", "namespace", newRole.Namespace, "name", newRole.Name, "rules", newRole.Rules)
@@ -657,6 +690,9 @@ func (r *AutoscalingListenerReconciler) createRoleForListener(ctx context.Contex
 }
 
 func (r *AutoscalingListenerReconciler) updateRoleForListener(ctx context.Context, listenerRole *rbacv1.Role, desiredRules []rbacv1.PolicyRule, desiredRulesHash string, logger logr.Logger) (ctrl.Result, error) {
+	ctx, span := otel.Tracer("arc").Start(ctx, "AutoscalingListenerReconciler.updateRoleForListener")
+	defer span.End()
+
 	ctx, span := otel.Tracer("arc").Start(ctx, "AutoscalingListenerReconciler.updateRoleForListener")
 	defer span.End()
 
@@ -675,6 +711,9 @@ func (r *AutoscalingListenerReconciler) updateRoleForListener(ctx context.Contex
 }
 
 func (r *AutoscalingListenerReconciler) createRoleBindingForListener(ctx context.Context, autoscalingListener *v1alpha1.AutoscalingListener, listenerRole *rbacv1.Role, serviceAccount *corev1.ServiceAccount, logger logr.Logger) (ctrl.Result, error) {
+	ctx, span := otel.Tracer("arc").Start(ctx, "AutoscalingListenerReconciler.createRoleBindingForListener")
+	defer span.End()
+
 	ctx, span := otel.Tracer("arc").Start(ctx, "AutoscalingListenerReconciler.createRoleBindingForListener")
 	defer span.End()
 
